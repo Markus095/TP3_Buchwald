@@ -1,30 +1,39 @@
+import random
 class Cola:
     def __init__(self):
-        prim = None
-        ult = None
+        # invariante:
+        # si la cola está vacía => frente = ultimo = None
+        # si la cola no está vacía => frente != None y ult != None
+        self.frente = None
+        self.ultimo = None
 
-    def encolar(self,dato):
-        if(prim != None):
-            nuevo.dato = dato
-            nuevo.prox = None
-            ult.prox = nuevo
+    def encolar(self, dato):
+        nuevo = _Nodo(dato)
+        if self.ultimo == None:
+            # cola vacía
+            self.ultimo = nuevo
+            self.frente = nuevo
         else:
-            prim.dato = dato
-            ult = prim
+            self.ultimo.prox = nuevo
+            self.ultimo = nuevo
 
     def desencolar(self):
-        x = prim.dato
-        prim = prim.prox
-        return x
+        """
+        Desencola un elemento y lo devuelve.
+        Pre: la cola no puede estar vacía.
+        """
+        dato = self.frente.dato
+        self.frente = self.frente.prox
+        if self.frente is None:
+            self.ultimo = None
+        return dato
 
     def esta_vacia(self):
-        if(prim != None):
-            return False
-        else:
-            return True
+        return self.frente is None
 
-    def ver_primero(self):
-        return prim.dato
+    def ver_frente(self):
+        """Pre: la cola no es vacía"""
+        return self.frente.dato
 
 class Pila:
     def __init__(self):
@@ -32,6 +41,7 @@ class Pila:
         Inicializa una nueva pila, vacía
         '''
         self.tope = None
+        self.largo = 0
 
     def apilar(self, dato):
         '''
@@ -39,24 +49,29 @@ class Pila:
         '''
         nodo = _Nodo(dato, self.tope)
         self.tope = nodo
+        self.largo += 1
 
     def desapilar(self):
         '''
         Desapila el elemento que está en el tope de la pila
         y lo devuelve.
-        Pre: la pila NO está vacía.
-        Pos: el nuevo tope es el que estaba abajo del tope anterior
+        Pre: la pila no está vacía.
+        Pos: el nuevo tope es el siguiente elemento al tope anterior
         '''
         if self.esta_vacia():
             raise ValueError("pila vacía")
         dato = self.tope.dato
         self.tope = self.tope.prox
+        self.largo -= 1
         return dato
+
+    def largo(self):
+        return self.largo
 
     def ver_tope(self):
         '''
         Devuelve el elemento que está en el tope de la pila.
-        Pre: la pila NO está vacía.
+        Pre: la pila no está vacía.
         '''
         if self.esta_vacia():
             raise ValueError("pila vacía")
@@ -74,6 +89,7 @@ class _Nodo:
     def __init__(self, dato, prox=None):
         self.dato = dato
         self.prox = prox
+
 
 class Grafo:
     def __init__(self, dirigido, vertices_iniciales = None):
@@ -168,7 +184,7 @@ class Grafo:
         for v in self.lista_adyacencia.values():
             v.pop(vertice, None)
 
-    def vertices(self):
+    def obtener_vertices(self):
         """
         Obtener todos los vertices del grafo
 
@@ -180,9 +196,19 @@ class Grafo:
         for vertice in self.lista_adyacencia.keys():
             resultado.append(vertice)
 
+
         return resultado
 
-    def adyacentes(self, vertice):
+    def existe_vertice(self, id):
+        """
+        Se recibe por parametro un vertice y se retorna un booleano indicando si existe o no.
+        """
+        if(id in self.lista_adyacencia):
+            return True
+        else:
+            return False
+
+    def obtener_adyacentes(self, vertice):
         """
         Devuelve una lista con todos los vertices adyances al <vertice>
 
@@ -194,22 +220,18 @@ class Grafo:
         """
         resultado = []
 
-        for v in self.lista_adyacencia.get(vertice):
+        for v in self.lista_adyacencia.get(vertice,{}):
             resultado.append(v)
 
         return resultado
 
-    def aristas(self):
-        aristas = []
-        visitados = set()
-        for v in self:
-            for w in self.adyacentes(v):
-                if w in visitados:
-                    continue
-                aristas.append((v,w))
-            visitados.add(v)
-        return aristas
-
+    def tiene_adyacentes(self,vertice):
+        if(self.existe_vertice(vertice) == False):
+            return False
+        if(len(self.lista_adyacencia[vertice]) > 0):
+            return True
+        else:
+            return False
 
     def __getitem__(self, arg):
         vertices = list(self.lista_adyacencia.keys())
